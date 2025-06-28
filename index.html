@@ -13,6 +13,7 @@
     .dark-mode table { color: #f9fafb; }
     .dark-mode .bg-white { background-color: #374151 !important; }
     .changed-cell { background-color: #fcd34d; }
+    .hidden { display: none; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen p-6 transition-colors" id="body">
@@ -27,10 +28,18 @@
       <input type="text" id="csvUrl" placeholder="Import CSV from URL" class="block p-2 border rounded w-64" />
       <button id="loadUrl" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">Load URL</button>
       <input type="text" id="searchInput" placeholder="Search..." class="block p-2 border rounded w-64" />
+    </div>
+
+    <div class="flex gap-4 justify-center mb-6 hidden" id="actionButtons">
       <button id="downloadCsv" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Download CSV</button>
-      <button id="exportJson" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export JSON</button>
-      <button id="exportXlsx" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Export XLSX</button>
-      <button id="exportPdf" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Export PDF</button>
+      <div class="relative">
+        <button id="exportBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export ▼</button>
+        <div id="exportMenu" class="absolute hidden mt-2 w-32 bg-white border rounded shadow-lg z-10">
+          <button id="exportJson" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Export JSON</button>
+          <button id="exportXlsx" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Export XLSX</button>
+          <button id="exportPdf" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Export PDF</button>
+        </div>
+      </div>
       <button id="addRow" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Add Row</button>
       <button id="addColumn" class="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700">Add Column</button>
     </div>
@@ -43,6 +52,10 @@
   <script>
     let csvData = [], originalData = [];
 
+    function showActions() {
+      document.getElementById('actionButtons').classList.remove('hidden');
+    }
+
     function saveToLocal() {
       localStorage.setItem('csvDraft', JSON.stringify(csvData));
     }
@@ -53,6 +66,7 @@
         csvData = JSON.parse(saved);
         originalData = JSON.parse(saved);
         renderTable(csvData);
+        showActions();
       }
     }
 
@@ -74,6 +88,7 @@
           originalData = JSON.parse(JSON.stringify(results.data));
           renderTable(csvData);
           saveToLocal();
+          showActions();
         }
       });
     });
@@ -92,6 +107,7 @@
               originalData = JSON.parse(JSON.stringify(results.data));
               renderTable(csvData);
               saveToLocal();
+              showActions();
             }
           });
         });
@@ -182,6 +198,7 @@
           originalData = JSON.parse(JSON.stringify(results.data));
           renderTable(csvData);
           saveToLocal();
+          showActions();
         }
       });
     });
@@ -195,6 +212,10 @@
       a.download = 'edited.csv';
       a.click();
       URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      document.getElementById('exportMenu').classList.toggle('hidden');
     });
 
     document.getElementById('exportJson').addEventListener('click', () => {
