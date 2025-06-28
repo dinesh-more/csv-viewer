@@ -135,11 +135,11 @@
 
       document.querySelectorAll('td[contenteditable=true]').forEach(td => {
         td.addEventListener('input', (e) => {
-          const row = e.target.getAttribute('data-row');
-          const key = e.target.getAttribute('data-key');
-          csvData[row][key] = e.target.textContent;
-          renderTable(csvData);
-          saveToLocal();
+        const row = e.target.getAttribute('data-row');
+        const key = e.target.getAttribute('data-key');
+        csvData[row][key] = e.target.textContent;
+        e.target.classList.add('changed-cell');
+        saveToLocal();
         });
       });
     }
