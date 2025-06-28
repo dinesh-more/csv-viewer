@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CSV Viewer Online</title>
-  <meta name="description" content="Free online CSV viewer. Upload and view your CSV files instantly in your browser.">
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
-    h1 { color: #333; }
-    #output { margin-top: 20px; overflow-x: auto; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #eee; }
-    input[type="file"] { margin-top: 10px; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Viewer & Editor</title>
+  <meta name="description" content="Modern CSV Viewer and Editor - Upload, Edit, Export CSV files online.">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-  <h1>CSV Viewer Online</h1>
-  <p>Select a CSV file to view:</p>
-  <input type="file" id="csvFile" accept=".csv" />
-  <div id="output"></div>
+<body class="bg-gray-100 text-gray-800 min-h-screen p-6">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-semibold text-center mb-6">CSV Viewer & Editor</h1>
+
+    <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
+      <input type="file" id="csvFile" accept=".csv" class="block w-full md:w-auto p-2 border rounded" />
+      <button id="downloadCsv" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Download CSV</button>
+      <button id="exportJson" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export as JSON</button>
+    </div>
+
+    <div id="tableContainer" class="overflow-x-auto bg-white shadow rounded p-4"></div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
+    let csvData = [];
+
     document.getElementById('csvFile').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -31,44 +32,53 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          const data = results.data;
-          if (data.length === 0) {
-            document.getElementById('output').innerHTML = '<p>No data found.</p>';
-            return;
-          }
-
-          const table = document.createElement('table');
-          const thead = document.createElement('thead');
-          const tbody = document.createElement('tbody');
-
-          // Headers
-          const headers = Object.keys(data[0]);
-          const trHead = document.createElement('tr');
-          headers.forEach(header => {
-            const th = document.createElement('th');
-            th.textContent = header;
-            trHead.appendChild(th);
-          });
-          thead.appendChild(trHead);
-
-          // Rows
-          data.forEach(row => {
-            const tr = document.createElement('tr');
-            headers.forEach(header => {
-              const td = document.createElement('td');
-              td.textContent = row[header];
-              tr.appendChild(td);
-            });
-            tbody.appendChild(tr);
-          });
-
-          table.appendChild(thead);
-          table.appendChild(tbody);
-          const output = document.getElementById('output');
-          output.innerHTML = '';
-          output.appendChild(table);
+          csvData = results.data;
+          renderTable(csvData);
         }
       });
+    });
+
+    function renderTable(data) {
+      if (!data.length) return;
+      const headers = Object.keys(data[0]);
+      let html = '<table class="min-w-full border">';
+      html += '<thead><tr>' + headers.map(h => `<th class="border p-2 bg-gray-100">${h}</th>`).join('') + '</tr></thead>';
+      html += '<tbody>';
+      data.forEach((row, rowIndex) => {
+        html += '<tr>' + headers.map(h => `<td contenteditable="true" data-row="${rowIndex}" data-key="${h}" class="border p-2">${row[h] || ''}</td>`).join('') + '</tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = html;
+
+      document.querySelectorAll('td[contenteditable=true]').forEach(td => {
+        td.addEventListener('input', (e) => {
+          const row = e.target.getAttribute('data-row');
+          const key = e.target.getAttribute('data-key');
+          csvData[row][key] = e.target.textContent;
+        });
+      });
+    }
+
+    document.getElementById('downloadCsv').addEventListener('click', () => {
+      const csv = Papa.unparse(csvData);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'edited.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('exportJson').addEventListener('click', () => {
+      const json = JSON.stringify(csvData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'data.json';
+      a.click();
+      URL.revokeObjectURL(url);
     });
   </script>
 </body>
