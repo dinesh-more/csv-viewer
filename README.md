@@ -3,7 +3,7 @@
 
 A modern, minimalist, and powerful web-based tool to view, edit, and export CSV files — built using HTML, JavaScript, and Tailwind CSS.
 
-> 🖥️ Live Demo: [https://dinesh-more.github.io/csv-viewer-online/](https://dinesh-more.github.io/csv-viewer-online/)
+> 🖥️ Live Demo: [https://dinesh-more.github.io/csv-viewer-online/](https://dinesh-more.github.io/csv-viewer/)
 
 ---
 
